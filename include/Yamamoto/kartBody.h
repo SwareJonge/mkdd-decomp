@@ -35,6 +35,7 @@ public:
     // TODO: move in KartGame
     enum GameStatus {
         HasCoDriver = 1<<0,
+        GsUnknown2 = 1<<2,
         GsUnknown3 = 1<<3,
     };
 
@@ -61,6 +62,9 @@ public:
         CsUnknown26 = 1<<26,
         CsUnknown27 = 1<<27,
         CsUnknown29 = 1<<29,
+        CsUnknown30 = 1<<30,
+        CsUnknown31 = 1<<31,
+        Drifting = DriftLeft | DriftRight,
     };
 
     KartBody() {}
@@ -112,6 +116,7 @@ public:
     KartStrat *getStrat() { return mKartStrat; }
     KartThunder *getThunder() { return mKartThunder; }
     KartDamage *getDamage() { return mKartDamage; }
+    KartStar *getStar() { return mKartStar; }
     KartGame *getGame() { return mKartGame; }
     KartItem *getItem() { return mKartItem; }
     KartTumble *getTumble() { return mKartTumble; }

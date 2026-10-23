@@ -106,4 +106,4 @@ public:
     JGeometry::TVec3f _38;
 };
 
-#endif KARTGAME_H
+#endif // KARTGAME_H

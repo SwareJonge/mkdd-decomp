@@ -166,6 +166,7 @@ public:
             getKartSus(i + idx * 4)->ResetInit(i);
     }
 
+    void DoAnime(int idx) { getKartAnime(idx)->DoAnime(idx); }
     void DoSusAction(int idx) { getKartSus(idx)->DoSusAction(idx); }
     void DoTireAction(int idx) { getKartSus(idx)->DoTireAction(); }
 
