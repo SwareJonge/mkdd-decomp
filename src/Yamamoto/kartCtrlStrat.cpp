@@ -1,5 +1,6 @@
 #include "JSystem/JGeometry/Vec.h"
 #include "Kaneshige/Course/CrsGround.h"
+#include "Kaneshige/KartChecker.h"
 #include "Kaneshige/RaceMgr.h"
 #include "Osako/kartPad.h"
 #include "Sato/GeographyObj.h"
@@ -15,6 +16,7 @@
 
 #include "JSystem/JAudio/JASFakeMatch2.h"
 #include "dolphin/mtx.h"
+#include "kartEnums.h"
 #include "types.h"
 
 bool KartGame::Init(int kartNo) {
@@ -1206,7 +1208,49 @@ void KartGame::SetRank() {
     kartBody->_59c = 0;
 }
 
-void KartGame::RankWatchMan() {}
+void KartGame::RankWatchMan() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
+
+    if ((mCountDownDuration != 0 )
+        || (RaceMgr::getCurrentManager()->getRaceMode() == TIME_ATTACK) 
+        || GetKartCtrl()->IsMiniGame()) return;
+
+    KartChecker *kartChecker = RCMGetKartChecker(num);
+
+    if ((body->_59c == 0) && (body->mMyRank > kartChecker->getRank())) {
+        if (GetKartCtrl()->GetCarSpeed(num) > 60.0f) {
+            if (!body->getChecker()->CheckOnlyTandemPartsClearKey(num)) {
+                body->_59c = 120;
+            }
+        }
+    }
+
+    if ((body->mMyRank > kartChecker->getRank()) && (body->mCarStatus & 0x8000)) {
+        body->_59c = 100;
+    }
+
+    if ((body->mMyRank < kartChecker->getRank()) && (body->_59c >= 90)) {
+        body->_59c = 89;
+    }
+
+    if (body->_59c == 90) {
+        if (GetKartCtrl()->GetCarSpeed(num) > 60.0f) {
+            if (!body->getChecker()->CheckOnlyTandemPartsClearKey(num)) {
+                GetKartCtrl()->getKartSound(num)->DoPathVoice();
+            }
+        }
+    }
+
+    if (body->_59c != 0) {
+        --body->_59c;
+    }
+
+    body->mMyRank = kartChecker->getRank();
+    if (_E != 0) {
+        --_E;
+    }
+}
 
 void KartGame::ItemWatchMan(ItemObj *incomingItem) {
     if (!incomingItem) {
