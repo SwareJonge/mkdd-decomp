@@ -11,6 +11,7 @@
 #include "Yamamoto/KartGame.h"
 #include "Yamamoto/kartBody.h"
 #include "Yamamoto/kartCtrl.h"
+#include "Yamamoto/kartParams.h"
 
 #include "JSystem/JAudio/JASFakeMatch2.h"
 #include "dolphin/mtx.h"
@@ -1178,7 +1179,103 @@ void KartGame::DoFlagCtrl() {
 }
 
 bool KartGame::KeepWatch() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
 
+    if (body->getChecker()->CheckSpecialDyn()) return true;
+
+    int respawn = false;
+
+    KartSus *sus[4];
+    sus[0] = GetKartCtrl()->getKartSus(num * 4 + 0);
+    sus[1] = GetKartCtrl()->getKartSus(num * 4 + 1);
+    sus[2] = GetKartCtrl()->getKartSus(num * 4 + 2);
+    sus[3] = GetKartCtrl()->getKartSus(num * 4 + 3);
+
+
+    if (body->mBodyGround.getAttribute() == CrsGround::Attr_255) {
+        if (sus[0]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[0]->_124 & 1)
+        || sus[1]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[1]->_124 & 1)
+        || sus[2]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[2]->_124 & 1)
+        || sus[3]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[3]->_124 & 1)) {
+            body->getRescue()->MakeRescue(nullptr, 6);
+            return true;
+        }
+    }
+    else {
+        if (body->mBodyGround.getJugemPoint()) {
+            u8 respawnType;
+            if (body->mBodyGround.getAttribute() == CrsGround::Attr_Water) {
+                if (body->_1a0[1][3] - body->mBodyGround.getWaterHeight() < -RescueSeaDepth[body->mIdx]) {
+                    respawnType = 5;
+                    respawn = 1;
+                }
+            }
+            else if (body->mBodyGround.getAttribute() == CrsGround::Attr_10) {
+                if ((body->mPlayerPosMtx[1][3] - body->mBodyGround.getHeight()) < 120.0f) {
+                    GetKartCtrl()->getKartSound(num)->DoFallVoice();
+                    
+                    if (!GetKartCtrl()->getKartAnime(num)->IsDangerPlusAnime(num)) {
+                        if (!GetKartCtrl()->getKartAnime(num)->IsDamage(num)) {
+                            if (body->_460 >= 0.f) {
+                                GetKartCtrl()->getKartAnime(num)->mFlags |= 0x4000000;
+                            }
+                            else {
+                                GetKartCtrl()->getKartAnime(num)->mFlags |= 0x2000000;
+                            }
+                        }
+                    }
+                    respawnType = 1;
+                    respawn = 1;
+                }
+            }
+            else if (sus[0]->mCrsGnd.getAttribute() == CrsGround::Attr_5 && (sus[0]->_124 & 1)
+                || sus[1]->mCrsGnd.getAttribute() == CrsGround::Attr_5 && (sus[1]->_124 & 1)
+                || sus[2]->mCrsGnd.getAttribute() == CrsGround::Attr_5 && (sus[2]->_124 & 1)
+                || sus[3]->mCrsGnd.getAttribute() == CrsGround::Attr_5 && (sus[3]->_124 & 1)) {
+                    respawnType = 0;
+                    respawn = 1;
+            }
+            else if (sus[0]->mCrsGnd.getAttribute() == CrsGround::Attr_15 && (sus[0]->_124 & 1)
+                || sus[1]->mCrsGnd.getAttribute() == CrsGround::Attr_15 && (sus[1]->_124 & 1)
+                || sus[2]->mCrsGnd.getAttribute() == CrsGround::Attr_15 && (sus[2]->_124 & 1)
+                || sus[3]->mCrsGnd.getAttribute() == CrsGround::Attr_15 && (sus[3]->_124 & 1)) {
+                    respawnType = 2;
+                    respawn = 1;
+            }
+            else if (sus[0]->mCrsGnd.getAttribute() == CrsGround::Attr_14 && (sus[0]->_124 & 1)
+                || sus[1]->mCrsGnd.getAttribute() == CrsGround::Attr_14 && (sus[1]->_124 & 1)
+                || sus[2]->mCrsGnd.getAttribute() == CrsGround::Attr_14 && (sus[2]->_124 & 1)
+                || sus[3]->mCrsGnd.getAttribute() == CrsGround::Attr_14 && (sus[3]->_124 & 1)) {
+                    respawnType = 3;
+                    respawn = 1;
+            }
+            else if (sus[0]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[0]->_124 & 1)
+                || sus[1]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[1]->_124 & 1)
+                || sus[2]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[2]->_124 & 1)
+                || sus[3]->mCrsGnd.getAttribute() == CrsGround::Attr_255 && (sus[3]->_124 & 1)) {
+                    respawnType = 6;
+                    respawn = 1;
+            }
+
+            if (respawn >= 1 && !(body->mCarStatus & 0x40000000)) {
+                body->getRescue()->MakeRescue(nullptr, respawnType);
+                return true;
+            }
+        }
+
+        if (body->mBodyGround.getCannonPoint()) {
+            body->getCannon()->MakeCannon();
+            return true;
+        }
+
+        if (body->mBodyGround.getPipePoint()) {
+            body->getPipe()->MakePipe();
+            return true;
+        }
+    }
+
+    return false;
 }
 
 void KartGame::DoActionMgr() {

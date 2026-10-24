@@ -148,11 +148,11 @@ extern CubeParam *CubeParamsData[21];
 // extern UNK waruCamOp;
 // extern UNK kuppaCamOp;
 // extern UNK CameraOpData;
-// extern UNK RescueSeaDepth;
-// extern UNK floorDepth;
-// extern UNK floorThunderDepth;
-// extern UNK bridgeDepth;
-// extern UNK bridgeThunderDepth;
+extern f32 RescueSeaDepth[21];
+extern f32 floorDepth[21];
+extern f32 floorThunderDepth[21];
+extern f32 bridgeDepth[21];
+extern f32 bridgeThunderDepth[21];
 extern f32 tireOffsetPos[21];
 
 // Other Params
