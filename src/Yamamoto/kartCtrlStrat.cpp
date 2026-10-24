@@ -1,6 +1,10 @@
 #include "JSystem/JGeometry/Vec.h"
+#include "Kaneshige/Course/CrsGround.h"
 #include "Kaneshige/RaceMgr.h"
 #include "Osako/kartPad.h"
+#include "Sato/GeographyObj.h"
+#include "Sato/GeographyObjMgr.h"
+#include "Sato/ItemObj.h"
 #include "Sato/ItemObjMgr.h"
 #include "Sato/JPEffectPerformer.h"
 #include "Sato/stEffectMgr.h"
@@ -10,6 +14,7 @@
 
 #include "JSystem/JAudio/JASFakeMatch2.h"
 #include "dolphin/mtx.h"
+#include "types.h"
 
 bool KartGame::Init(int kartNo) {
     mBody = GetKartCtrl()->getKartBody(kartNo);
@@ -1172,11 +1177,106 @@ void KartGame::DoFlagCtrl() {
     kartBody->getDamage()->mFlags &= ~(0x02);
 }
 
-void KartGame::KeepWatch() {}
+bool KartGame::KeepWatch() {
+
+}
 
 void KartGame::DoActionMgr() {
-    // void body->getStar() {}
-    // void ItemObjMgr::getKartHitList(int) {}
+    KartBody *body = mBody;
+    int num = body->mMynum;
+    // This makes no sense but whatever
+    ItemObjMgr* itemMgr = GetItemObjMgr();
+    ItemObjMgr::KartHitList *kartHitList = itemMgr->getKartHitList(num);
+    GeographyObj **reactHitObjList = GetGeoObjMgr()->getKartReactHitObjectList(body->mMynum);
+
+    if (KeepWatch()) return;
+
+    if (!GetKartCtrl()->IsMiniGameEnd() && !(body->mGameStatus & 0x400) 
+        && !(body->mCarStatus & 0x40000) && !body->getCrash()->CheckMatchlessTimer()) {
+        
+        if (reactHitObjList[0x10]) {
+            body->getCrash()->MakeTornado();
+        } else if (reactHitObjList[17]) {
+            body->getRescue()->MakeRescue(reactHitObjList[17], 4);
+        }
+        else if (kartHitList->mObjects[9]) {
+            body->getTumble()->MakeWanWanTumble(kartHitList->mObjects[9]);
+        }
+        else if (kartHitList->mObjects[4]) {
+            body->getCrash()->MakeKameCrash(kartHitList->mObjects[4]);
+        }
+        else if (kartHitList->mObjects[3]) {
+            body->getCrash()->MakeKameCrash(kartHitList->mObjects[3]);
+        }
+        else if (kartHitList->mObjects[8]) {
+            body->getCrash()->MakeBombCrash(kartHitList->mObjects[8]);
+        }
+        else if (kartHitList->mObjects[2]) {
+            body->getCrash()->MakeSpin(kartHitList->mObjects[2]);
+        }
+        else if (kartHitList->mObjects[0]) {
+            body->getCrash()->MakeHalfSpin(kartHitList->mObjects[0]);
+        }
+        else if (kartHitList->mObjects[11]) {
+            body->getTumble()->MakeKameTumble(kartHitList->mObjects[11]);
+        }
+        else if (kartHitList->mObjects[10]) {
+            body->getCrash()->MakeBurn(kartHitList->mObjects[10]);
+        }
+        else if (kartHitList->mObjects[12]) {
+            body->getThunder()->MakeThunder();
+        }
+        else if (body->_590 & 4) {
+            body->getCrash()->MakeSpin(nullptr);
+        }
+        else if (body->_590 & 8) {
+            body->getCrash()->MakeHalfSpin(nullptr);
+        }
+
+        if (body->mCarStatus & 0x100000) return;
+
+        if (body->_590 & 0x10) {
+            body->getTumble()->MakeStarTumble();
+        }
+        else if (body->getDamage()->mFlags & 4) {
+            body->getCrash()->MakeHalfSpin(nullptr);
+        }
+        else if (body->getDamage()->mFlags & 2) {
+            body->getDamage()->MakeHalfDamage();
+        }
+        else if (body->getChecker()->CheckCrash() == true) {
+            return;
+        }
+    }
+
+    DoRollOver();
+    if (kartHitList->mObjects[7]) {
+        body->getStar()->MakeStar();
+    }
+    else if (kartHitList->mObjects[6]) {
+        MakeMashDash();
+    }
+    else if (body->mBodyGround.isObject() && body->getTouchNum() >= 1) {
+        switch (body->mBodyGround.getObject()->getKind()) {
+        case 0x3fd:
+            MakeBoardDash();
+            break;
+        }
+    }
+    else {
+        if (body->mBodyGround.getAttribute() == CrsGround::Attr_7  && body->getTouchNum() >= 1) {
+            MakeJumpDash();
+        }
+        if (body->mBodyGround.getAttribute() == CrsGround::Attr_55  && body->getTouchNum() >= 1) {
+            MakeSpJumpDash();
+        }   
+        if (body->mBodyGround.getAttribute() == CrsGround::Attr_71  && body->getTouchNum() >= 1) {
+            MakeSpJumpDash();
+        }
+        if (body->mBodyGround.getAttribute() == CrsGround::Attr_8  && body->getTouchNum() >= 1) {
+            MakeBoardDash();
+        }
+    }
 }
 
 void KartGame::DoActionCtrl() {
@@ -1192,7 +1292,6 @@ void KartGame::DoActionCtrl() {
 void KartGame::DoStatus() {
     KartBody *body = mBody;
     int num = body->mMynum;
-
 
     if (!body->getChecker()->CheckIndication()) {
         if ((body->mGameStatus & 0x4000) != 0) {

@@ -57,7 +57,7 @@ public:
     void ItemWatchMan(ItemObj *incomingItem);
     void AfterItemWatchMan();
     void DoFlagCtrl();
-    void KeepWatch();
+    bool KeepWatch();
     void DoActionMgr();
     void DoActionCtrl();
     void DoStatus();

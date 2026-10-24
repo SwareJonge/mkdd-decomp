@@ -326,7 +326,9 @@ public:
     void setMaxItemMoveNum(const u8 &);
     void entryMiniGameList(ItemObj *);
     void tstEnableDrawGhost(bool, const JSUListIterator<ItemObj> &);
-    KartHitList* getKartHitList(int);
+    KartHitList *getKartHitList(int idx) {
+        return &mHitList[idx];
+    }
 
     static void createMgr() { gItemMgr = new ItemObjMgr(); }
     static ItemObjMgr *getItemObjMgr() { return gItemMgr; }
