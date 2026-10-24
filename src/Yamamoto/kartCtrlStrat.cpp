@@ -1138,7 +1138,21 @@ void KartGame::DoCorner() {}
 
 void KartGame::FrameWork(f32, KartSus *, KartSus *) {}
 
-void KartGame::DoBodyAction() {}
+void KartGame::DoBodyAction() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
+
+    // an array affects regalloc... maybe refactor the ones that use an array
+    KartSus *sus1 = GetKartCtrl()->getKartSus(num * 4 + 0);
+    KartSus *sus2 = GetKartCtrl()->getKartSus(num * 4 + 1);
+    KartSus *sus3 = GetKartCtrl()->getKartSus(num * 4 + 2);
+    KartSus *sus4 = GetKartCtrl()->getKartSus(num * 4 + 3);
+
+    FrameWork(body->_3b0, sus1, sus2);
+    FrameWork(body->_3b0, sus3, sus4);
+    FrameWork(body->_3b0, sus1, sus4);
+    FrameWork(body->_3b0, sus2, sus3);
+}
 
 void KartGame::DoElementForce() {
     KartBody *body = mBody;
