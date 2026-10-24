@@ -1136,7 +1136,21 @@ void KartGame::DoRearSlideBody() {
 
 void KartGame::DoCorner() {}
 
-void KartGame::FrameWork(f32, KartSus *, KartSus *) {}
+void KartGame::FrameWork(f32 f1, KartSus *sus1, KartSus *sus2) {
+   KartBody *body = mBody;
+
+    JGeometry::TVec3f forceVec;
+    f32 diff = (sus1->_b4 - sus2->_b4);
+    f32 forceScale = (diff * (7.0f * body->_3ac)) * (f1 * 20.0f);
+    forceVec.set(
+        body->_110[0][1] * (forceScale), 
+        body->_110[1][1] * (forceScale), 
+        body->_110[2][1] * (forceScale)
+    );
+    body->DoForce(&sus2->_c0, &forceVec);
+    GetKartCtrl()->MulVector(&forceVec, -1.0f, -1.0f, -1.0f);
+    body->DoForce(&sus1->_c0, &forceVec);
+}
 
 void KartGame::DoBodyAction() {
     KartBody *body = mBody;
