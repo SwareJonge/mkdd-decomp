@@ -1051,7 +1051,23 @@ void KartGame::MakeStartDash() {
 
 void KartGame::MakeCrashDash() {}
 
-void KartGame::MakeWheelSpin() {}
+void KartGame::MakeWheelSpin() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
+    
+    body->_584 = 8;
+    body->_588 = 0;
+    body->_594 = 0;
+    MakeClear();
+
+    body->getItem()->FallItem();
+    body->mCarStatus |= 0x800;
+    JPEffectPerformer::setEffect(JPEffectPerformer::Effect_WheelSpin, num, body->mPos, 0);
+    JPEffectPerformer::setEffect(JPEffectPerformer::Effect_WheelSpin, num, body->mPos, 1);
+
+    GetKartCtrl()->getKartSound(num)->DoWheelSpin();
+    GetKartCtrl()->getKartSound(num)->DoTandemVoice(0x24);
+}
 
 void KartGame::MakeJump() {}
 

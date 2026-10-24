@@ -27,6 +27,7 @@ public:
         Effect_Unknown1b = 0x1b,    // something slide related
         Effect_Unknown1A = 0x1A,
         Effect_Star = 0x1c,
+        Effect_WheelSpin = 0x20,   // TODO: maybe just name it tiresmoke
         Effect_Unknown23 = 0x23,
         Effect_Fireball = 0x24
     };
