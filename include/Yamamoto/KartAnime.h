@@ -1,6 +1,7 @@
 #ifndef KARTANIME_H
 #define KARTANIME_H
 
+#include "macros.h"
 #include "types.h"
 
 class KartAnime
@@ -101,13 +102,15 @@ public:
     // Inline
     bool IsChangeStart() { return mFlags & 0x1; } // 0x802f9bc4
 
-    u8 _0[0x10];         //
+    PLACEHOLDER_BYTES(0x0, 0x4);
+    f32 _4;
+    f32 _8;
+    PLACEHOLDER_BYTES(0xc, 0x10);
     u64 mFlags;          // 0x10, 0x14
     u8 mType;            // 0x18
-    u8 _19[0x30 - 0x19]; //
+    PLACEHOLDER_BYTES(0x19, 0x30);
     u64 mDamageFlags;             // 30, 34
-    u8 _38[0x48 - 0x38]; //
-
+    PLACEHOLDER_BYTES(0x38, 0x48);
 }; // Size: 0x48
 
 // Outside class Inlines

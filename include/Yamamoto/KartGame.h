@@ -90,7 +90,7 @@ public:
     // void DoTurboPower();
     // void CheckBalloonPlayer();
     KartBody *mBody; // 00
-    JugemPoint  *mJugemPoint;
+    JugemPoint *mJugemPoint;
     u8 _8; // probably a bitmask
     u8 _9;
     u8 _A;
@@ -100,7 +100,7 @@ public:
     u16 _10;
     u16 mCountDownDuration; // 12
     ItemObj *mIncomingItem; // 14, the item that's about to collide with the kart
-    float _18[2];
+    f32 _18[2];
     JGeometry::TVec3f _20;
     JGeometry::TVec3f _2C;
     JGeometry::TVec3f _38;

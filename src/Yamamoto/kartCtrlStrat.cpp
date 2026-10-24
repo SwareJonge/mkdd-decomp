@@ -1053,7 +1053,57 @@ void KartGame::MakeWheelSpin() {}
 
 void KartGame::MakeJump() {}
 
-void KartGame::DoAirCheck() {}
+void KartGame::DoAirCheck() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
+
+    if (!GetKartCtrl()->IsMiniGameEnd() && body->mBodyGround.getStaggerCode() != 0 && !(body->mCarStatus & 0x100000000)) {
+        if (!GetKartCtrl()->getKartAnime(num)->IsDangerPlusAnime(num)) {
+            if (!GetKartCtrl()->getKartAnime(num)->IsDamage(num)) {
+                if (body->_460 >= 0.f) {
+                    GetKartCtrl()->getKartAnime(num)->mFlags |= 0x4000000;
+                }
+                else {
+                    GetKartCtrl()->getKartAnime(num)->mFlags |= 0x2000000;
+                }
+                GetKartCtrl()->getKartSound(num)->DoStaggerVoice();
+            }
+        }
+    }
+
+    if (!(_8 & 1) && (body->getTouchNum() == 0)) {
+        if (GetKartCtrl()->getKartAnime(num)->_8 < 10.0f) {
+            GetKartCtrl()->getKartAnime(num)->_8 += 0.5f;
+        }
+    }
+
+    if (!(_8 & 1) && (body->getTouchNum() == 0)
+        && body->mPlayerPosMtx[1][3] - body->mBodyGround.getHeight() > 150.0f 
+        && body->mVel.y > 0.0f) {
+       _8 |= 1;
+
+       if (!GetKartCtrl()->getKartAnime(num)->IsJump(num)
+        && !GetKartCtrl()->getKartAnime(num)->IsDangerAnime(num)
+        && !GetKartCtrl()->getKartAnime(num)->IsFloatAnime(num)
+        && !GetKartCtrl()->getKartAnime(num)->IsGaol(num)
+        && !GetKartCtrl()->getKartAnime(num)->IsDrift(num)
+        && !body->getChecker()->CheckPartsClearKey(num)) {
+            if ((body->mCarStatus & 0x8000)) {
+                GetKartCtrl()->getKartAnime(num)->_4 = 0.3f;
+            }
+            else {
+                GetKartCtrl()->getKartAnime(num)->_4 = 0.2f;
+            }
+
+            GetKartCtrl()->getKartAnime(num)->mFlags |= 0x2000000000;
+       }
+    }
+
+    if (((body->getTouchNum() == 0) || (body->mCarStatus & 0x40)) 
+        && !(body->mCarStatus & 0x40) && body->mPlayerPosMtx[1][3] - body->mBodyGround.getHeight() > 300.0f) {
+        body->mCarStatus |= 0x40;
+    }
+}
 
 void KartGame::DoRearSlidePower() {
     KartBody *body = mBody;
