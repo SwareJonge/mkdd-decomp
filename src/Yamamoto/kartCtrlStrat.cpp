@@ -31,7 +31,7 @@ bool KartGame::Init(int kartNo) {
 
     _A = 0;
     mTimeToChange = 0;
-    _C[0] = 0;
+    _C = 0;
 
     bool isRight = RaceMgr::getCurrentManager()->getStartPoint(&_20, &_2C, kartNo);
 
@@ -340,7 +340,7 @@ void KartGame::CheckDriftTurbo(void) {
     } else {
         if ((body->mCarStatus & KartBody::DriftRight) != 0) {
             if (body->mGameStatus & KartBody::HasCoDriver) {
-                if (gpCoDriv->getMainStickX() > -0.30000001f) {
+                if (gpCoDriv->getMainStickX() > -0.3f) {
                     didDriftSterr = true;
                     DoDriftTurboSterr();
                 }
@@ -393,7 +393,7 @@ f32 KartGame::DoWarmUpRoll() {
         return 0.f;
     }
 
-    float ret;
+    f32 ret;
     if (gpDriver->testButton(GetKartCtrl()->getKartPad(kartNo)->mTrigL |
                              GetKartCtrl()->getKartPad(kartNo)->mTrigR)) {
         if (body->mCarStatus & KartBody::DriftLeft) {
@@ -755,7 +755,7 @@ bool KartGame::DoPushStart() {
     return false;
 }
 
-void KartGame::DoBalance(float *a2, float a3) {
+void KartGame::DoBalance(f32 *a2, f32 a3) {
     KartBody *kartBody = mBody;
 
     if ((mBody->mCarStatus & (KartBody::CsUnknown5 | KartBody::CsUnknown10
@@ -1136,11 +1136,21 @@ void KartGame::DoRearSlideBody() {
 
 void KartGame::DoCorner() {}
 
-void KartGame::FrameWork(float, KartSus *, KartSus *) {}
+void KartGame::FrameWork(f32, KartSus *, KartSus *) {}
 
 void KartGame::DoBodyAction() {}
 
-void KartGame::DoElementForce() {}
+void KartGame::DoElementForce() {
+    KartBody *body = mBody;
+
+    if (body->getTouchNum() != 0 || body->mCarStatus & 0x100000) {
+        body->mVel.scale(0.99f);
+    }
+    else {
+        body->mVel.scale(0.9999f);
+    }
+    body->mWg.scale(0.98f);
+}
 
 bool KartGame::CheckBalloon() {
     KartBody *kartBody = mBody;

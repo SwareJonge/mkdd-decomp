@@ -95,7 +95,7 @@ public:
     u8 _9;
     u8 _A;
     u8 mTimeToChange;
-    u8 _C[0x2];
+    u8 _C;
     u16 _E;
     u16 _10;
     u16 mCountDownDuration; // 12
