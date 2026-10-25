@@ -1049,7 +1049,41 @@ void KartGame::MakeStartDash() {
     return;
 }
 
-void KartGame::MakeCrashDash() {}
+void KartGame::MakeCrashDash() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
+    
+
+    if (body->mCarStatus & 0x1000) return;
+
+    if (body->mCarStatus & 0x4000) {
+        body->mBoostTimer = 45;
+        return;
+    }
+
+    GetKartCtrl()->getKartSound(num)->DoMashDashSound();
+    body->mCarStatus |= (0x8000 | 0x4000);
+    body->mBoostTimer = 20;
+    body->_598 = body->mBoostTimer;
+    body->_52c = 0.4f;
+    body->_474 = 0.313f;
+    body->_3c8 = body->_3d0;
+    JPEffectPerformer::setEffect(JPEffectPerformer::Effect_Unknown1A, num, body->mPos, 0);
+
+    if (GetKartCtrl()->CheckCamera(num)) {
+        int cameraNum = GetKartCtrl()->GetCameraNum(num);
+        if (GetKartCtrl()->getKartCam(cameraNum)->GetCameraMode() != 0) {
+            if (!(GetKartCtrl()->getKartCam(cameraNum)->GetDemoCam()->_38 & 4)) {
+                return;
+            }
+            if (GetKartCtrl()->getKartCam(cameraNum)->GetCameraMode() != 10) {
+                return;
+            }
+            
+        }
+        JPEffectPerformer::setEffectEachCam(JPEffectPerformer::Effect_Unknown23, num, cameraNum, 0);
+    }
+}
 
 void KartGame::MakeWheelSpin() {
     KartBody *body = mBody;
