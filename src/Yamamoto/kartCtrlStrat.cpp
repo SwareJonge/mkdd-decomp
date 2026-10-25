@@ -1186,7 +1186,53 @@ void KartGame::DoRearSlideBody() {
     // void JGeometry::TVec3<float>::div(float) {}
 }
 
-void KartGame::DoCorner() {}
+void KartGame::DoCorner() {
+    KartBody *body = mBody;
+
+    JGeometry::TVec3f v;
+
+    if ((body->getTouchNum() == 0) || (body->_458 <= 30.0f) || (body->mCarStatus & (0x1000  | 0x2 | 0x1)) ) {
+        body->_4d4 = 0.0f;
+    }
+
+    if (((body->mFrame <= 0.7f) && (body->mFrame >= -0.7f)) || (body->_458 < 45.0f)) {
+        body->_4d4 = 0.0f;
+        return;
+    }
+
+    GetKartCtrl()->DevMatrixByVector(&v, &body->_2cc, body->_110);
+
+    v.x *= 0.3f;
+    f32 x = (v.x / body->_3a4);
+    if ((x < 1.5f) && (x > -1.5f)) {
+        x = 0.0f;
+    }
+    else if ((x > 2.5f)) {
+        x = 2.5f;
+    }
+    else if (x < -2.5f) {
+        x = -2.5f;
+    }
+
+    if ((body->_468 > 0.261666f) || (body->_468 < -0.261666f)) {
+        x *= 0.1f;
+    }
+    if (x > 2.442219972610474f) {
+        x = 2.442219972610474f;
+    }
+    if (x < -2.442219972610474f) {
+        x = -2.442219972610474f;
+    }
+    if ((body->mFrame > 0.0f) && (x < 0.0f)) {
+        x *= -1.0f;
+    }
+    else if ((body->mFrame < 0.0f) && (x > 0.0f)) {
+        x *= -1.0f;
+    }
+
+    GetKartCtrl()->ChaseFnumber(&body->_4d4, x, 0.1f);
+    DoBalance(&body->_4d4,0.4f);
+}
 
 void KartGame::FrameWork(f32 f1, KartSus *sus1, KartSus *sus2) {
    KartBody *body = mBody;
