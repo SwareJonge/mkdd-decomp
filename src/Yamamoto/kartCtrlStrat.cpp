@@ -1223,7 +1223,37 @@ void KartGame::MakeWheelSpin() {
     GetKartCtrl()->getKartSound(num)->DoTandemVoice(0x24);
 }
 
-void KartGame::MakeJump() {}
+void KartGame::MakeJump() {
+    KartBody *body = mBody;
+    int num = body->mMynum;
+    KartGamePad *pad = GetKartCtrl()->GetDriveCont(num);
+    if (body->getTouchNum() != 0 
+    && pad->testButton(GetKartCtrl()->getKartPad(num)->mTrigL) 
+    && pad->testButton(GetKartCtrl()->getKartPad(num)->mTrigR)
+    && pad->testButton(GetKartCtrl()->getKartPad(num)->mAccelBtn)
+    && ((body->mFrame > 0.3f) || body->mFrame < -0.3f)) {
+        body->mCarStatus |= 8;
+    }
+    else {
+        if (body->mCarStatus & 8) {
+            if (!pad->testButton(GetKartCtrl()->getKartPad(num)->mAccelBtn)) {
+                body->_3c8 = 0.0f;
+                body->mVel.x = 0.0f;
+                body->mVel.z = 0.0f;
+            }
+        }
+        body->mCarStatus &= ~8;
+    }
+
+    if (body->mBodyGround.getAttribute() == CrsGround::Attr_6 
+    || (GetKartCtrl()->GetCarSpeed(num) >= 60.0f) 
+    || body->mCarStatus & (0x100000000000 | 0x100000000 | 0x400000 | 0x100000 | 0x8000 | 0x1000)) {
+        body->mCarStatus &= ~8;
+    }
+    if (body->mCarStatus & 8) {
+        GetKartCtrl()->getKartSound(num)->DoSpinTurnSound();
+    }
+}
 
 void KartGame::DoAirCheck() {
     KartBody *body = mBody;
