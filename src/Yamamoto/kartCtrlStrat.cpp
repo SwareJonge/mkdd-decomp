@@ -7,6 +7,7 @@
 #include "Sato/GeographyObjMgr.h"
 #include "Sato/ItemObj.h"
 #include "Sato/ItemObjMgr.h"
+#include "Sato/ItemWanWan.h"
 #include "Sato/JPEffectPerformer.h"
 #include "Sato/stEffectMgr.h"
 #include "Yamamoto/KartGame.h"
@@ -739,8 +740,127 @@ int KartGame::DoRollOver() {
 }
 
 void KartGame::DoWanWan() {
-    // void ItemWanWanObj::getDifVel() const {}
-    // void ItemWanWanObj::getPullVec(JGeometry::TVec3<float> *) {}
+    KartBody *body = mBody;
+    int num = body->mMynum;
+
+    JGeometry::TVec3f firstNodePos, v2, v3, pullVec;
+
+    body->_2b4.zero();
+
+    if (!(body->mCarStatus & 0x1000)) return;
+
+    if (!body->getItem()->IsMyItem()) {
+        body->mCarStatus &= ~0x1000;
+
+        GetKartCtrl()->getKartAnime(num)->mFlags |= 0x1000000;
+        GetKartCtrl()->getKartSound(num)->DoWanWanStopSound();
+        body->getStrat()->DoMotor(MotorManager::MotorType_4);
+        GetKartCtrl()->getKartSound(body->mMynum)->DoKartsetSeSound(0x1007c);
+        return;
+    }
+
+    ItemObj *equipItem = GetItemObjMgr()->getKartEquipItem(num);
+    if (!equipItem) return;
+
+    if (equipItem->getKind() != 7) return;
+
+    ItemWanWanObj *objWanWan = (ItemWanWanObj*)ItemObjMgr::getItemWanWanObj(equipItem); // TODO: fix return in ItemObjMgr
+    KartGamePad *pad = GetKartCtrl()->GetDriveCont(num);
+    body->getStrat()->DashClear();
+    objWanWan->getPullVec(&pullVec);
+
+
+    f32 pullLen = pullVec.length();
+    if (pullLen <= 0.0f) return;
+
+    objWanWan->getFirstNodePos(&firstNodePos);
+    v2.set(body->_1a0[0][3], body->_1a0[1][3], body->_1a0[2][3]);
+    v3.sub(firstNodePos, v2);
+    f32 v3Len = v3.length();
+    f32 chainLen = objWanWan->getChainLength();
+    bool b = false;
+
+    if (v3Len > chainLen) {
+        f32 dist = v3Len - chainLen;
+        if (dist > 150.0f) {
+            body->getItem()->ReleseWanWan();
+            body->_2b4.zero();
+            return;
+        }
+
+        if (dist > 10.0f) {
+            f32 step = (dist / 27.0f);
+            step *= 8.0f;
+            step += 1.0f;
+            if (step > 8.0f) 
+                step = 8.0f;
+
+            if (_9 == 0) {
+                body->getStrat()->DoPowerMotor(1.0f, step, 0);
+                _9 = 16;
+            }
+
+            if (_9 != 0) {
+                --_9;
+            }
+        }
+        body->_2b4.set(v3);
+        body->_2b4.normalize();
+        body->_2b4.scale(dist);
+    }
+
+    if (v3Len > chainLen) b = true;
+
+    v3.normalize();
+
+    body->getStrat()->DoRotPose(v3, 0.8f);
+    body->_3ec = pullLen * 2.16f;
+    body->_3ec = 200.0f; // ?
+    v2.set(0.0f, 0.0f, 0.0f);
+    PSMTXMultVec(body->_110, &v2, &firstNodePos);
+
+    if (b == true) {
+        f32 pullStrength = pullLen * body->_3a4;
+        pullVec.x = body->_308.x * pullStrength;
+        pullVec.y = body->_308.y * pullStrength;
+        pullVec.z = body->_308.z * pullStrength;
+        body->DoForce(&firstNodePos, &pullVec);
+        pullVec.x = body->_2fc.x * -(pullStrength * 0.1f);
+        pullVec.y = body->_2fc.y * -(pullStrength * 0.1f);
+        pullVec.z = body->_2fc.z * -(pullStrength * 0.1f);
+        body->DoForce(&firstNodePos, &pullVec);
+    }
+    else {
+        f32 pullStrength = (pullLen * -body->_3a4);
+        pullVec.x = body->_308.x * pullStrength;
+        pullVec.y = body->_308.y * pullStrength;
+        pullVec.z = body->_308.z * pullStrength;
+        body->DoForce(&firstNodePos, &pullVec);
+    }
+
+    v2.set(0.0f, 0.0f, 3.0f);
+    PSMTXMultVec(body->_110, &v2, &firstNodePos);
+
+    f32 pullStrength = -(pad->getMainStickX() * 10.0f);
+    JGeometry::TVec3f vel; // my brain hurts
+    vel.x = objWanWan->getDifVel().x;
+    vel.y = objWanWan->getDifVel().y;
+    vel.z = objWanWan->getDifVel().z;
+
+    GetKartCtrl()->DevMatrixByVector2(&v3, &vel, body->_110);
+    pullStrength += (-v3.x * 80.0f);
+    if (pullStrength > 30.0f) {
+        pullStrength = 30.0f;
+    }
+    if (pullStrength < -30.0f) {
+        pullStrength = -30.0f;
+    }
+    pullStrength *= body->_3a4;
+    pullVec.x = body->_2f0.x * pullStrength;
+    pullVec.y = body->_2f0.y * pullStrength;
+    pullVec.z = body->_2f0.z * pullStrength;
+    body->DoForce(&firstNodePos, &pullVec);
+    body->_3c8 = body->_3d0;
 }
 
 bool KartGame::DoPushStart() {

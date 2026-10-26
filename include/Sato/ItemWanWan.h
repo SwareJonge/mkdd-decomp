@@ -1,7 +1,11 @@
 #ifndef ITEMWANWAN_H
 #define ITEMWANWAN_H
 
+#include "JSystem/JGeometry/Vec.h"
 #include "Sato/ItemObj.h"
+#include "Sato/StringObj.h"
+#include "macros.h"
+#include "types.h"
 
 // TODO: virtual and static functions(actually, probably everything)
 class J3DAnmCluster;
@@ -38,7 +42,7 @@ public:
     void setCLPoint();
     void moveCenterLine();
     void moveStraight();
-    void getChainLength();
+    f32 getChainLength();
     void getFirstNodePos(JGeometry::TVec3f *);
     const bool checkKartColDisappear(int);
     void separate();
@@ -59,7 +63,15 @@ public:
     void getCenterNodePos(JGeometry::TVec3f *);
     void getLastNodePos(JGeometry::TVec3f *);
 
-    u8 _[0x35c - 0x2b0];
+    void getPullVec(JGeometry::TVec3f *out) { *out = mPullVec; }
+    const JGeometry::TVec3f &getDifVel() const { return mDiffVel; }
+
+private:
+    StringObj *mStringObj;
+    JGeometry::TVec3f mPullVec; // 2b4
+    PLACEHOLDER_BYTES(0x2c0, 0x338);
+    JGeometry::TVec3f mDiffVel; // 338
+    PLACEHOLDER_BYTES(0x344, 0x35c);
 }; 
 
 #endif // ITEMWANWAN_H
