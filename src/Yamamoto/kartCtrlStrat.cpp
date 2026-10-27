@@ -1333,7 +1333,92 @@ void KartGame::DoRearSlidePower() {
 }
 
 void KartGame::DoRearSlideBody() {
-    // void JGeometry::TVec3<float>::div(float) {}
+    KartBody *body = mBody;
+    int num = body->mMynum;
+
+    JGeometry::TVec3f v;
+
+    if ((GetKartCtrl()->GetCarSpeed(num) <= 20.0f) || (body->_32c.y < 0.705f)) {
+        body->_35c.zero();
+        return;
+    }
+
+    if (body->mBodyGround.getAttribute() == CrsGround::Attr_6) {
+        body->_35c.zero();
+        return;
+    }
+
+    if (body->mCarStatus & (0x8000000 | 0x4000000 | 0x400 | 0x20)) {
+        body->_35c.zero();
+        return;
+    }
+    
+    f32 wgScale = 0.2f;
+    KartGamePad *pad = GetKartCtrl()->GetDriveCont(num);
+    if (pad->testButton(GetKartCtrl()->getKartPad(num)->mBtnB)
+    || !pad->testButton(GetKartCtrl()->getKartPad(num)->mAccelBtn)) {
+        wgScale = 0.3f;
+    }
+    
+    if (((GetKartCtrl()->GetCarSpeed(num) <= 50.0f) || (body->mCarStatus & (4 | 2 | 1))) 
+    || (body->getTouchNum() <= 1)) {
+        GetKartCtrl()->ChaseFnumber(&body->_35c.x, 0.0f, wgScale);
+        GetKartCtrl()->ChaseFnumber(&body->_35c.z, 0.0f, 0.2f);
+        if (body->getTouchNum() != 0) {
+            DoRearSlidePower();
+        }
+        return;
+    }
+
+    if (body->_3c8 <= (body->_3d0 * 0.1f) || (body->mFrame <= 0.0f && body->mFrame >= -0.0f)) {
+        GetKartCtrl()->ChaseFnumber(&body->_35c.x, 0.0f, wgScale);
+        GetKartCtrl()->ChaseFnumber(&body->_35c.z, 0.0f, 0.2f);
+        if (body->getTouchNum() != 0) {
+            DoRearSlidePower();
+        }
+        return;
+    }
+
+    GetKartCtrl()->DevMatrixByVector(&v, &body->_2cc, body->_110);
+    v.div(body->_3a4);
+
+    f32 f = body->mFrame;
+    if (f < 0.0f) {
+        f *= -1.0f;
+    }
+
+    f32 spd = body->_458 / 100.0f;
+    if (spd > 1.0f) {
+        spd = 1.0f;
+    }
+    if (v.x > 14.0f) {
+        v.x = 14.0f;
+    }
+    if (v.x < -14.0f) {
+        v.x = -14.0f;
+    }
+    if (v.z > 7.0f) {
+        v.z = 7.0f;
+    }
+    if (v.z < -7.0f) {
+        v.z = -7.0f;
+    }
+
+    f32 f_unk = body->_48c;
+    if (f_unk > 1.0f) {
+        f_unk = 1.0f;
+    }
+    v.x *= f_unk * (f * spd);
+
+    if (pad->testButton(GetKartCtrl()->getKartPad(num)->mBtnB)
+    || !pad->testButton(GetKartCtrl()->getKartPad(num)->mAccelBtn)) {
+        v.x *= 0.6f;
+    }
+
+    GetKartCtrl()->ChaseFnumber(&body->_35c.x, v.x, 0.55f);
+    GetKartCtrl()->ChaseFnumber(&body->_35c.z, v.z, 0.55f);
+    DoRearSlidePower();
+    body->mWg.y *= f * 0.005f + 1.0f;
 }
 
 void KartGame::DoCorner() {
