@@ -670,7 +670,10 @@ bool KartCtrl::IsWallReact(int kartIndex) {
 
 bool KartCtrl::HaveBalloon(int kartIndex) {
     getKartBody(kartIndex);
-    return RCMGetKartChecker(kartIndex)->getBalloonNumber() == 0;
+    if (RCMGetKartChecker(kartIndex)->getBalloonNumber() == 0) {
+        return true;
+    }
+    return false;
 }
 
 int KartCtrl::GetDriftCnt(int kartIndex) {
